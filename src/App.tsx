@@ -18,53 +18,72 @@ type address = {
   postcode: number
 }
 
-type user = {
-  name: name;
-  dob: dateofbirth;
-  location: address;
+type UserData = {
+  // name: name;
+  // dob: dateofbirth;
+  // location: address;
+  name: string,
+  age: number,
+  address: string
 };
 
 export default function App() {
-  const [result, setResult] = useState<user[]>([]);
+  const [user, setUser] = useState<UserData>({
+    name: '',
+    age: 0,
+    address: '',
+  })
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault()
+
+    const value = e.currentTarget.value
+
+    setUser({ ...user, name: value })
+  }
 
   useEffect(() => {
-    const api = async () => {
-      const data = await fetch("https://randomuser.me/api", {
-        method: "GET"
-      });
-      const jsonData = await data.json();
-      setResult(jsonData.results);
-    };
+    const getData = async () => {
+      const response = await fetch('https://randomuser.me/api/')
+      const data = await response.json()
+      const firstUser = data.results[0]
 
-    api();
-  }, []);
+      setUser(prev => {
+        return {
+          ...prev,
+          name: firstUser.name.first,
+          age: firstUser.dob.age,
+          address: firstUser.location.street.name,
+        }
+      })
+    }
+    getData()
+  }, [])
 
   return (
     <div className="App">
-       <table className="table">
-            <thead>
-                <tr>
-                    <th>S.N</th>
-                    <th>Full Name</th>
-                    <th>AGE</th>
-                    <th>ADDRESS</th>
-                </tr>
-            </thead>
-            <tbody>
-            {
-                result.map((value, index)=>{
-                    return(
-                        <tr key={index}>
-                            <td>{index+1}</td>
-                            <td>{value.name.title} {value.name.first} {value.name.last}</td>
-                            <td>{value.dob.age}</td>
-                            <td>{value.location.street.number} {value.location.street.name} {value.location.state} {value.location.city} {value.location.country} {value.location.postcode}</td>
-                        </tr>
-                    )
-                })
-            }
-            </tbody>
-        </table>
+      <div>
+        <form >
+          <label>Enter your name:
+            <input
+              type="text"
+              value={user.name}
+              onChange={handleChange}
+            />
+          </label>
+          <label>Enter Age:
+            <input
+              type="text"
+              value={user.age}
+            />
+          </label>
+          <label>Enter Address:
+            <input
+              type="text"
+              value={user.address}
+            />
+          </label>
+        </form>
+      </div>
     </div>
   );
 }
